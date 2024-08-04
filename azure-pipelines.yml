@@ -77,6 +77,6 @@ stages:
               secretType: 'dockerRegistry'
               containerRegistryType: 'Azure Container Registry'
               azureSubscriptionEndpointForSecrets: 'Pay-As-You-Go(xxxxxxxxxxxxxxxxxxxxxxxxxxx)'
-              azureContainerRegistry: 'xxxxxxxxx.azurecr.io'
+              azureContainerRegistry: 'xxxxxxxx.azurecr.io'
               secretName: 'acrsecret'
              

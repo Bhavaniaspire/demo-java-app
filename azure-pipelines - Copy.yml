@@ -9,7 +9,7 @@ variables:
  
 stages:
 - stage: Build
-  displayName: AKS Build Stage
+  displayName: Build Stage
   jobs:
   - job: Build
     displayName:  Build

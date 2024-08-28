@@ -1,0 +1,62 @@
+Single Master K8s installation using kubeadm
+-----------------------------------------------
+
+Create atleast two linux vms 2vcpu 2GB RAM with all internal communication open 
+
+Install docker container runtime on both machines.
+curl -fsSL https://get.docker.com -o install-docker.sh
+sh install-docker.sh
+sudo usermod -aG docker ubuntu
+
+Install kubelet, kubeadm and kubectl on all nodes 
+
+sudo apt-get update
+# apt-transport-https may be a dummy package; if so, you can skip that package
+
+sudo apt-get install -y apt-transport-https ca-certificates curl gpg
+curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
+sudo apt-get update
+sudo apt-get install -y kubelet kubeadm kubectl
+sudo apt-mark hold kubelet kubeadm kubectl 
+
+Now lets configure cri-dockerd as k8s doesnot directly communicate with docker.
+Download a deb or rpm package acording to your linux distribution Refer Here
+
+wget https://github.com/Mirantis/cri-dockerd/releases/download/v0.3.9/cri-dockerd_0.3.9.3-0.ubuntu-jammy_amd64.deb
+sudo dpkg -i cri-dockerd_0.3.9.3-0.ubuntu-jammy_amd64.deb
+
+ssh into master node and execute as root user
+
+kubeadm init --cri-socket unix:///var/run/cri-dockerd.sock
+
+This execution should lead to some output as shown below
+To start using your cluster, you need to run the following as a regular user:
+
+  mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+Alternatively, if you are the root user, you can run:
+
+  export KUBECONFIG=/etc/kubernetes/admin.conf
+
+You should now deploy a pod network to the cluster.
+
+Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
+  https://kubernetes.io/docs/concepts/cluster-administration/addons/
+
+Then you can join any number of worker nodes by running the following on each as root:
+
+kubeadm join 172.31.21.151:6443 --token uiei66.ibdixnmka1dj6do9 \
+        --discovery-token-ca-cert-hash sha256:686d85a23ef071bd338eac409438c43eada59e2fc7f053e369d4e0b4ebed0503
+		
+Now ssh into node1 and execute join command as root user
+kubeadm join 172.31.21.151:6443 --token uiei66.ibdixnmka1dj6do9 \
+        --discovery-token-ca-cert-hash sha256:686d85a23ef071bd338eac409438c43eada59e2fc7f053e369d4e0b4ebed0503 --cri-socket unix:///var/run/cri-dockerd.sock
+
+Now in the master node execute kubectl get nodes
+
+Now we need to configure CNI Refer Here
+Lets install weavenet
+kubectl apply -f https://github.com/weaveworks/weave/releases/download/v2.8.1/weave-daemonset-k8s.yaml

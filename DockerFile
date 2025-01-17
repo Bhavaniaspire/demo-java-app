@@ -1,2 +1,2 @@
 FROM Ubuntu
-RUN
+RUN sudo apt update

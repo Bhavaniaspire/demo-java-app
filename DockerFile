@@ -1,5 +1,5 @@
 FROM Ubuntu
-RUN sudo apt update
+RUN sudo apt update && sudo apt install openjdk-11-jdk
 
 
 
@@ -7,6 +7,9 @@ RUN sudo apt update
 
 ## This is for test the linked workitems
 ##
+
+
+
 
 
 
